@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "81194070970",
+    "project_id": "registro-notas-udb",
+    "storage_bucket": "registro-notas-udb.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:81194070970:android:1a693568b88b7675682383",
+        "android_client_info": {
+          "package_name": "com.sv.udb.registronotasapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBmML5c_b4NUMwBNr-pEBkPb7VuBFQeb2A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
