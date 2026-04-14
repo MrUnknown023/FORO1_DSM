@@ -29,7 +29,26 @@ import com.sv.udb.registronotasapp.utils.calculateRemainingPercentage
 import com.sv.udb.registronotasapp.utils.calculateTotalPercentage
 import com.sv.udb.registronotasapp.utils.currentDateTime
 import com.sv.udb.registronotasapp.utils.getStatus
-
+//TODO:
+//  •	Crear pantalla o diálogo para editar actividad
+//	•	Permitir modificar:
+//	•	nombre
+//	•	porcentaje
+//	•	nota
+//	•	Permitir eliminar actividad
+//	•	Confirmación antes de eliminar actividad
+//	•	Validar que al editar una actividad la suma de porcentajes no pase de 100
+//	•	Validar que la nota esté entre 0 y 10
+//	•	Validar que el porcentaje sea mayor que 0
+//	•	Verificar redondeo de nota final a 2 decimales
+//	•	Mostrar claramente:
+//	•	porcentaje acumulado
+//	•	porcentaje faltante
+//	•	nota final actual
+//	•	estado aprobado/reprobado
+//	•	Mostrar el estado actual del usuario si es aprobado o no.
+//	•	Agregar mensaje visual cuando la materia aún no completa el 100%
+//	•	Mejorar diseño del detalle de materia
 @Composable
 fun SubjectDetailScreen(
     subjectId: Long

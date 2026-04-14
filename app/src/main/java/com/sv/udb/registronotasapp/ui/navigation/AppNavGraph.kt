@@ -10,6 +10,14 @@ import com.sv.udb.registronotasapp.ui.screens.LoginScreen
 import com.sv.udb.registronotasapp.ui.screens.SubjectDetailScreen
 import com.sv.udb.registronotasapp.ui.screens.SubjectsScreen
 
+//TODO:
+//	•	Agregar navegación segura pasando subjectId
+//	•	Agregar navegación de regreso entre pantallas
+//	•	Definir flujo completo:
+//	•	Login
+//	•	Materias
+//	•	Detalle de materia
+//	•	Preparar rutas futuras para editar actividades
 @Composable
 fun AppNavGraph() {
     val navController = rememberNavController()

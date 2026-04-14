@@ -9,6 +9,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
 import com.sv.udb.registronotasapp.data.repository.UserRepository
 
+//TODO:
+// • Guardar el usuario autenticado en memoria o sesión
+//	•	Pasar el userId real entre pantallas
+//	•	Mostrar el nombre real del usuario logueado en la app
+//	•	Implementar botón de cerrar sesión
+//	•	Redirigir al login al cerrar sesión
+//	•	Mejorar diseño del login
+//	•	Mejorar diseño del detalle de materia
+//	•	Agregar mensajes vacíos:
+//	•	sin materias
+//	•	sin actividades
+//	•	Agregar Snackbar o mensajes visuales para errores
+//	•	Agregar estados de éxito al guardar
+//	•	Mejorar espaciados, tipografías y consistencia visual
 @Composable
 fun LoginScreen(
     onLoginSuccess: () -> Unit
