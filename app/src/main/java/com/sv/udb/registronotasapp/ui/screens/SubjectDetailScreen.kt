@@ -1,26 +1,17 @@
 package com.sv.udb.registronotasapp.ui.screens
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.sv.udb.registronotasapp.data.model.ActivityItem
 import com.sv.udb.registronotasapp.data.repository.ActivityRepository
@@ -49,9 +40,11 @@ import com.sv.udb.registronotasapp.utils.getStatus
 //	•	Mostrar el estado actual del usuario si es aprobado o no.
 //	•	Agregar mensaje visual cuando la materia aún no completa el 100%
 //	•	Mejorar diseño del detalle de materia
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SubjectDetailScreen(
-    subjectId: Long
+    subjectId: Long,
+    onNavigateBack: () -> Unit
 ) {
     val context = LocalContext.current
     val repo = remember { ActivityRepository(context) }
@@ -61,7 +54,7 @@ fun SubjectDetailScreen(
     var activityName by remember { mutableStateOf("") }
     var percentageText by remember { mutableStateOf("") }
     var scoreText by remember { mutableStateOf("") }
-    var error by remember { mutableStateOf("") }
+    var errorText by remember { mutableStateOf("") }
 
     fun loadActivities() {
         activities = repo.getActivitiesBySubject(subjectId)
@@ -76,128 +69,197 @@ fun SubjectDetailScreen(
     val finalGrade = calculateFinalGrade(activities)
     val status = getStatus(finalGrade)
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        Text("Detalle de materia", style = MaterialTheme.typography.headlineMedium)
-
-        Text(
-            text = "Porcentaje acumulado: ${"%.2f".format(totalPercentage)}%",
-            modifier = Modifier.padding(top = 12.dp)
-        )
-
-        Text(
-            text = "Porcentaje faltante: ${"%.2f".format(remainingPercentage)}%",
-            modifier = Modifier.padding(top = 4.dp)
-        )
-
-        Text(
-            text = "Nota final actual: ${"%.2f".format(finalGrade)}",
-            modifier = Modifier.padding(top = 4.dp)
-        )
-
-        Text(
-            text = "Estado: $status",
-            modifier = Modifier.padding(top = 4.dp)
-        )
-
-        OutlinedTextField(
-            value = activityName,
-            onValueChange = { activityName = it },
-            label = { Text("Actividad") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp)
-        )
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            OutlinedTextField(
-                value = percentageText,
-                onValueChange = { percentageText = it },
-                label = { Text("%") },
-                modifier = Modifier.weight(1f)
-            )
-
-            OutlinedTextField(
-                value = scoreText,
-                onValueChange = { scoreText = it },
-                label = { Text("Nota") },
-                modifier = Modifier.weight(1f)
-            )
-        }
-
-        if (error.isNotBlank()) {
-            Text(
-                text = error,
-                color = MaterialTheme.colorScheme.error,
-                modifier = Modifier.padding(top = 8.dp)
-            )
-        }
-
-        Button(
-            onClick = {
-                val percentage = percentageText.toDoubleOrNull()
-                val score = scoreText.toDoubleOrNull()
-
-                when {
-                    activityName.isBlank() -> {
-                        error = "El nombre de la actividad es obligatorio."
-                    }
-                    percentage == null || percentage <= 0.0 -> {
-                        error = "El porcentaje debe ser mayor que 0."
-                    }
-                    score == null || score < 0.0 || score > 10.0 -> {
-                        error = "La nota debe estar entre 0 y 10."
-                    }
-                    totalPercentage + percentage > 100.0 -> {
-                        error = "La suma de porcentajes no puede superar 100%."
-                    }
-                    else -> {
-                        repo.insertActivity(
-                            ActivityItem(
-                                subjectId = subjectId,
-                                name = activityName,
-                                percentage = percentage,
-                                score = score,
-                                createdAt = currentDateTime()
-                            )
-                        )
-                        activityName = ""
-                        percentageText = ""
-                        scoreText = ""
-                        error = ""
-                        loadActivities()
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Detalle de materia") },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(Icons.Filled.ArrowBack, contentDescription = "Regresar")
                     }
                 }
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 12.dp)
-        ) {
-            Text("Agregar actividad")
+            )
         }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(horizontal = 16.dp)
+        ) {
 
-        LazyColumn(modifier = Modifier.padding(top = 16.dp)) {
-            items(activities) { activity ->
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp)
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(activity.name, style = MaterialTheme.typography.titleMedium)
-                        Text("Porcentaje: ${activity.percentage}%")
-                        Text("Nota: ${activity.score}")
-                        Text(
-                            "Aporte: ${"%.2f".format((activity.score * activity.percentage) / 100.0)}"
-                        )
+            // --- RESUMEN DE NOTAS ---
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = "Porcentaje acumulado: ${"%.2f".format(totalPercentage)}%",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Text(
+                        text = "Porcentaje faltante: ${"%.2f".format(remainingPercentage)}%",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Text(
+                        text = "Nota final actual: ${"%.2f".format(finalGrade)}",
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                    Text(
+                        text = "Estado: $status",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = if (status == "Aprobado") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+                    )
+                }
+            }
+
+            // --- FORMULARIO DE NUEVA ACTIVIDAD ---
+            OutlinedTextField(
+                value = activityName,
+                onValueChange = {
+                    activityName = it
+                    errorText = ""
+                },
+                label = { Text("Nueva Actividad") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+                singleLine = true
+            )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                OutlinedTextField(
+                    value = percentageText,
+                    onValueChange = {
+                        percentageText = it
+                        errorText = ""
+                    },
+                    label = { Text("% (Ej: 25)") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.weight(1f),
+                    singleLine = true
+                )
+
+                OutlinedTextField(
+                    value = scoreText,
+                    onValueChange = {
+                        scoreText = it
+                        errorText = ""
+                    },
+                    label = { Text("Nota (0-10)") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.weight(1f),
+                    singleLine = true
+                )
+            }
+
+            if (errorText.isNotBlank()) {
+                Text(
+                    text = errorText,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            }
+
+            Button(
+                onClick = {
+                    val activityNameTrimmed = activityName.trim()
+                    val percentage = percentageText.toDoubleOrNull()
+                    val score = scoreText.toDoubleOrNull()
+
+                    when {
+                        activityNameTrimmed.isBlank() -> {
+                            errorText = "El nombre de la actividad es obligatorio."
+                        }
+                        percentage == null || percentage <= 0.0 -> {
+                            errorText = "El porcentaje debe ser un número mayor que 0."
+                        }
+                        score == null || score < 0.0 || score > 10.0 -> {
+                            errorText = "La nota debe estar entre 0 y 10."
+                        }
+                        totalPercentage + percentage > 100.0 -> {
+                            errorText = "No puedes exceder el 100%. Te queda un $remainingPercentage% disponible."
+                        }
+                        // VALIDACIÓN: Evitar nombres repetidos
+                        activities.any { it.name.equals(activityNameTrimmed, ignoreCase = true) } -> {
+                            errorText = "Ya existe una actividad con ese nombre."
+                        }
+                        else -> {
+                            repo.insertActivity(
+                                ActivityItem(
+                                    subjectId = subjectId,
+                                    name = activityNameTrimmed,
+                                    percentage = percentage,
+                                    score = score,
+                                    createdAt = currentDateTime()
+                                )
+                            )
+                            activityName = ""
+                            percentageText = ""
+                            scoreText = ""
+                            errorText = ""
+                            loadActivities()
+                        }
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 12.dp)
+            ) {
+                Text("Agregar actividad")
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // --- LISTA DE ACTIVIDADES ---
+            if (activities.isEmpty()) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(
+                        text = "No tienes actividades registradas.",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodyLarge,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
+                }
+            } else {
+                LazyColumn(modifier = Modifier.fillMaxSize()) {
+                    items(activities) { activity ->
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(activity.name, style = MaterialTheme.typography.titleMedium)
+                                    Text(
+                                        text = "Valor: ${activity.percentage}% | Nota: ${activity.score}",
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
+                                    Text(
+                                        text = "Aporte final: ${"%.2f".format((activity.score * activity.percentage) / 100.0)}",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+
+                            }
+                        }
                     }
                 }
             }

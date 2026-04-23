@@ -8,27 +8,20 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
 import com.sv.udb.registronotasapp.data.repository.UserRepository
+import com.sv.udb.registronotasapp.utils.SessionManager
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
 
 //TODO:
-// • Guardar el usuario autenticado en memoria o sesión
-//	•	Pasar el userId real entre pantallas
-//	•	Mostrar el nombre real del usuario logueado en la app
-//	•	Implementar botón de cerrar sesión
-//	•	Redirigir al login al cerrar sesión
 //	•	Mejorar diseño del login
-//	•	Mejorar diseño del detalle de materia
-//	•	Agregar mensajes vacíos:
-//	•	sin materias
-//	•	sin actividades
-//	•	Agregar Snackbar o mensajes visuales para errores
-//	•	Agregar estados de éxito al guardar
-//	•	Mejorar espaciados, tipografías y consistencia visual
 @Composable
 fun LoginScreen(
-    onLoginSuccess: () -> Unit
+    onLoginSuccess: () -> Unit,
+    onNavigateBack: () -> Unit // Agregamos esto para que puedan volver al inicio
 ) {
     val context = LocalContext.current
     val userRepo = remember { UserRepository(context) }
+    val sessionManager = remember { SessionManager(context) }
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -41,18 +34,25 @@ fun LoginScreen(
         verticalArrangement = Arrangement.Center
     ) {
 
-        Text("Login", style = MaterialTheme.typography.headlineMedium)
+        Text("Iniciar Sesión", style = MaterialTheme.typography.headlineMedium)
 
         OutlinedTextField(
             value = email,
-            onValueChange = { email = it },
+            onValueChange = {
+                email = it
+                error = ""
+            },
             label = { Text("Correo") },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
         )
 
         OutlinedTextField(
             value = password,
-            onValueChange = { password = it },
+            onValueChange = {
+                password = it
+                error = ""
+            },
             label = { Text("Contraseña") },
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
@@ -73,25 +73,31 @@ fun LoginScreen(
                     return@Button
                 }
 
-                if (userRepo.userExists(email)) {
-                    val user = userRepo.loginUser(email, password)
-                    if (user != null) {
-                        onLoginSuccess()
-                    } else {
-                        error = "Contraseña incorrecta"
-                    }
+                if (!userRepo.userExists(email)) {
+                    error = "Este correo no está registrado"
+                    return@Button
+                }
+
+                val user = userRepo.loginUser(email, password)
+                if (user != null) {
+                    sessionManager.saveSession(user.id, user.displayName)
+                    onLoginSuccess()
                 } else {
-                    val result = userRepo.registerUser(email, password)
-                    if (result.isSuccess) {
-                        onLoginSuccess()
-                    } else {
-                        error = "Error al registrar"
-                    }
+                    error = "Contraseña incorrecta"
                 }
             },
             modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
         ) {
             Text("Ingresar")
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        TextButton(
+            onClick = onNavigateBack,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Cancelar y regresar")
         }
     }
 }

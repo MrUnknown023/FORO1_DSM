@@ -3,17 +3,16 @@ package com.sv.udb.registronotasapp.data.repository
 import android.content.ContentValues
 import android.content.Context
 import com.sv.udb.registronotasapp.data.db.DatabaseHelper
-import com.sv.udb.registronotasapp.data.db.DbStruct.UsersTable;
+import com.sv.udb.registronotasapp.data.db.DbStruct.UsersTable
 import com.sv.udb.registronotasapp.data.model.User
 
 class UserRepository (context: Context) {
 
     private val dbHelper = DatabaseHelper(context)
 
-    fun registerUser(email: String, password: String): Result<Long> {
+    fun registerUser(email: String, password: String, displayName: String): Result<Long> {
         return try {
             val db = dbHelper.writableDatabase
-            val displayName = email.substringBefore("@")
 
             val values = ContentValues().apply {
                 put(UsersTable.COL_EMAIL, email)
