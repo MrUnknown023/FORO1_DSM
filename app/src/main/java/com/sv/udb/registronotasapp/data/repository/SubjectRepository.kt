@@ -4,8 +4,9 @@ import android.content.ContentValues
 import android.content.Context
 import com.sv.udb.registronotasapp.data.db.DatabaseHelper
 import com.sv.udb.registronotasapp.data.db.DbStruct
-import com.sv.udb.registronotasapp.data.db.DbStruct.SubjectsTable;
+import com.sv.udb.registronotasapp.data.db.DbStruct.SubjectsTable
 import com.sv.udb.registronotasapp.data.model.Subject
+import com.sv.udb.registronotasapp.data.db.DbStruct.ActivitiesTable
 
 class SubjectRepository (context: Context) {
 
@@ -56,14 +57,22 @@ class SubjectRepository (context: Context) {
         return subjects
     }
 
-    fun deleteSubject(subjectId: Long): Int {
+    fun deleteSubject(subjectId: Long) {
         val db = dbHelper.writableDatabase
-        val rows = db.delete(
-            SubjectsTable.TABLE_NAME,
-            "${SubjectsTable.COL_ID} = ?",
-            arrayOf(subjectId.toString())
-        )
+
+        db.delete(ActivitiesTable.TABLE_NAME, "${ActivitiesTable.COL_SUBJECT_ID} = ?", arrayOf(subjectId.toString()))
+
+        // Borrar la materia
+        db.delete(SubjectsTable.TABLE_NAME, "${SubjectsTable.COL_ID} = ?", arrayOf(subjectId.toString()))
         db.close()
-        return rows
+    }
+
+    fun updateSubjectName(subjectId: Long, newName: String) {
+        val db = dbHelper.writableDatabase
+        val values = ContentValues().apply {
+            put(SubjectsTable.COL_NAME, newName)
+        }
+        db.update(SubjectsTable.TABLE_NAME, values, "${SubjectsTable.COL_ID} = ?", arrayOf(subjectId.toString()))
+        db.close()
     }
 }
